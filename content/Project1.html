@@ -1,0 +1,364 @@
+---
+title: "project1"
+output: html_document
+date: 'October 21, 2019'
+---
+
+
+
+<div id="alexis-ha-ah48766" class="section level2">
+<h2>Alexis Ha ah48766</h2>
+<pre class="r"><code>library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+happiness &lt;- read.csv(&quot;2017.csv&quot;)
+country_profile_variables &lt;- read.csv(&quot;country_profile_variables.csv&quot;)</code></pre>
+<p>The <code>country_profile_variable</code> dataset provides information on 229 countries. This information includes population, surface area, GDP, life expectancy, rates of employment/unemployment, etc. The <code>happiness</code> dataset also provides information on countries around the world, some of which is not included in the <code>country_profile_variables</code> dataset, such as average happiness, freedom, government corruption, and family. These two datasets can be analyzed together to determine if there are any correlations between these variables and the average happiness of each country. These datasets were retrieved from Kaggle.</p>
+<pre class="r"><code>hap &lt;- pivot_wider(happiness, names_from = Happiness.Score, values_from = Country)
+happy &lt;- hap %&gt;% pivot_longer(11:161, names_to = &quot;happinesss&quot;, values_to = &quot;country&quot;) %&gt;% 
+    na.omit
+
+chiao &lt;- country_profile_variables %&gt;% mutate(region = Region, population_thousands = Population.in.thousands..2017., 
+    GDP = GDP..Gross.domestic.product..million.current.US.., unemployment.percent = Unemployment....of.labour.force., 
+    life.expect = Life.expectancy.at.birth..females.males..years.) %&gt;% select(country, 
+    region, population_thousands, GDP, unemployment.percent, life.expect)
+
+hola &lt;- pivot_wider(chiao, names_from = &quot;region&quot;, values_from = &quot;country&quot;)
+country &lt;- hola %&gt;% pivot_longer(5:26, names_to = &quot;region&quot;, values_to = &quot;country&quot;) %&gt;% 
+    na.omit</code></pre>
+<p>The datasets were both made untidy by using pivot_wider(); in the <code>happiness</code> dataset, the happiness score values were used as the column names and in the <code>country_profile_variables</code> dataset, the regions were used as the column names. The datasets were then both made tidy using pivot_longer() to restore the happiness scores and region names back to the original variables.</p>
+<pre class="r"><code>join &lt;- happy %&gt;% inner_join(country, by = &quot;country&quot;)
+head(join)</code></pre>
+<pre><code>## # A tibble: 6 x 17
+##   Happiness.Rank Whisker.high Whisker.low Economy..GDP.pe… Family
+##            &lt;int&gt;        &lt;dbl&gt;       &lt;dbl&gt;            &lt;dbl&gt;  &lt;dbl&gt;
+## 1              1         7.59        7.48             1.62   1.53
+## 2              2         7.58        7.46             1.48   1.55
+## 3              3         7.62        7.39             1.48   1.61
+## 4              4         7.56        7.43             1.56   1.52
+## 5              5         7.53        7.41             1.44   1.54
+## 6              6         7.43        7.33             1.50   1.43
+## # … with 12 more variables: Health..Life.Expectancy. &lt;dbl&gt;, Freedom &lt;dbl&gt;,
+## #   Generosity &lt;dbl&gt;, Trust..Government.Corruption. &lt;dbl&gt;,
+## #   Dystopia.Residual &lt;dbl&gt;, happinesss &lt;chr&gt;, country &lt;chr&gt;,
+## #   population_thousands &lt;int&gt;, GDP &lt;int&gt;, unemployment.percent &lt;fct&gt;,
+## #   life.expect &lt;fct&gt;, region &lt;chr&gt;</code></pre>
+<pre class="r"><code>join &lt;- join %&gt;% select(-Whisker.high, -Whisker.low)
+join &lt;- join %&gt;% separate(life.expect, into = c(&quot;life_fem&quot;, &quot;life_male&quot;), sep = &quot;/&quot;)</code></pre>
+<p>The datasets were joined by country using inner_join(), to retain data for countries that were in both datasets. From the <code>happiness</code> dataset, all the following variables were retained, with the exception of Whisker.high and Whisker.low. In the <code>country_profile_variables</code> dataset, the following variables were retained: country, region, population, life expectancy, and unemployment. These variables were all chosen as I could potentially see them as having a correlation with the average happiness per country.</p>
+<pre class="r"><code>join %&gt;% select_if(is.numeric) %&gt;% scale %&gt;% cor()</code></pre>
+<pre><code>##                               Happiness.Rank Economy..GDP.per.Capita.
+## Happiness.Rank                    1.00000000              -0.82319425
+## Economy..GDP.per.Capita.         -0.82319425               1.00000000
+## Family                           -0.73573583               0.72940666
+## Health..Life.Expectancy.         -0.79823398               0.84358134
+## Freedom                          -0.57252652               0.39016065
+## Generosity                       -0.17559348              -0.02347547
+## Trust..Government.Corruption.    -0.44368383               0.36434480
+## Dystopia.Residual                -0.47386588               0.03162173
+## population_thousands              0.05314738              -0.02726189
+## GDP                              -0.19789986               0.21038108
+##                                    Family Health..Life.Expectancy.     Freedom
+## Happiness.Rank                -0.73573583             -0.798233981 -0.57252652
+## Economy..GDP.per.Capita.       0.72940666              0.843581343  0.39016065
+## Family                         1.00000000              0.645954652  0.42727185
+## Health..Life.Expectancy.       0.64595465              1.000000000  0.39061342
+## Freedom                        0.42727185              0.390613418  1.00000000
+## Generosity                     0.11633629              0.055846330  0.36485242
+## Trust..Government.Corruption.  0.26065428              0.295345897  0.51157532
+## Dystopia.Residual              0.01098949              0.080350629  0.08780606
+## population_thousands          -0.10484032              0.009540541  0.03818192
+## GDP                            0.13880719              0.260095761  0.13461613
+##                                Generosity Trust..Government.Corruption.
+## Happiness.Rank                -0.17559348                   -0.44368383
+## Economy..GDP.per.Capita.      -0.02347547                    0.36434480
+## Family                         0.11633629                    0.26065428
+## Health..Life.Expectancy.       0.05584633                    0.29534590
+## Freedom                        0.36485242                    0.51157532
+## Generosity                     1.00000000                    0.28439355
+## Trust..Government.Corruption.  0.28439355                    1.00000000
+## Dystopia.Residual             -0.06033436                    0.03094168
+## population_thousands          -0.08413085                   -0.10878953
+## GDP                           -0.08819162                    0.04135493
+##                               Dystopia.Residual population_thousands
+## Happiness.Rank                     -0.473865876          0.053147377
+## Economy..GDP.per.Capita.            0.031621727         -0.027261891
+## Family                              0.010989486         -0.104840316
+## Health..Life.Expectancy.            0.080350629          0.009540541
+## Freedom                             0.087806057          0.038181915
+## Generosity                         -0.060334357         -0.084130851
+## Trust..Government.Corruption.       0.030941681         -0.108789529
+## Dystopia.Residual                   1.000000000         -0.009066582
+## population_thousands               -0.009066582          1.000000000
+## GDP                                 0.029217978          0.731939967
+##                                       GDP
+## Happiness.Rank                -0.19789986
+## Economy..GDP.per.Capita.       0.21038108
+## Family                         0.13880719
+## Health..Life.Expectancy.       0.26009576
+## Freedom                        0.13461613
+## Generosity                    -0.08819162
+## Trust..Government.Corruption.  0.04135493
+## Dystopia.Residual              0.02921798
+## population_thousands           0.73193997
+## GDP                            1.00000000</code></pre>
+<pre class="r"><code>mean(join[join$region == &quot;NorthernEurope&quot;, ]$Freedom)</code></pre>
+<pre><code>## [1] 0.5239838</code></pre>
+<pre class="r"><code>mean(join[join$region == &quot;MiddleAfrica&quot;, ]$Freedom)</code></pre>
+<pre><code>## [1] 0.2351803</code></pre>
+<pre class="r"><code>summary(join)</code></pre>
+<pre><code>##  Happiness.Rank   Economy..GDP.per.Capita.     Family     
+##  Min.   :  1.00   Min.   :0.0000           Min.   :0.000  
+##  1st Qu.: 37.50   1st Qu.:0.6424           1st Qu.:1.025  
+##  Median : 77.00   Median :1.0693           Median :1.260  
+##  Mean   : 77.26   Mean   :0.9819           Mean   :1.194  
+##  3rd Qu.:116.50   3rd Qu.:1.3149           3rd Qu.:1.421  
+##  Max.   :155.00   Max.   :1.8708           Max.   :1.611  
+##                                                           
+##  Health..Life.Expectancy.    Freedom         Generosity    
+##  Min.   :0.0000           Min.   :0.0000   Min.   :0.0000  
+##  1st Qu.:0.3550           1st Qu.:0.3155   1st Qu.:0.1541  
+##  Median :0.6060           Median :0.4433   Median :0.2315  
+##  Mean   :0.5466           Mean   :0.4163   Mean   :0.2474  
+##  3rd Qu.:0.7160           3rd Qu.:0.5258   3rd Qu.:0.3238  
+##  Max.   :0.9495           Max.   :0.6582   Max.   :0.8381  
+##                                                            
+##  Trust..Government.Corruption. Dystopia.Residual  happinesss       
+##  Min.   :0.00000               Min.   :0.3779    Length:135        
+##  1st Qu.:0.05692               1st Qu.:1.6051    Class :character  
+##  Median :0.09315               Median :1.8267    Mode  :character  
+##  Mean   :0.12841               Mean   :1.8579                      
+##  3rd Qu.:0.16461               3rd Qu.:2.1314                      
+##  Max.   :0.46431               Max.   :3.1175                      
+##                                                                    
+##    country          population_thousands      GDP          
+##  Length:135         Min.   :    335      Min.   :    1559  
+##  Class :character   1st Qu.:   4834      1st Qu.:   13929  
+##  Mode  :character   Median :  11176      Median :   52958  
+##                     Mean   :  48034      Mean   :  376045  
+##                     3rd Qu.:  32552      3rd Qu.:  287898  
+##                     Max.   :1409517      Max.   :11158457  
+##                                                            
+##  unemployment.percent   life_fem          life_male            region         
+##  2.4    :  4          Length:135         Length:135         Length:135        
+##  5.5    :  4          Class :character   Class :character   Class :character  
+##  5.6    :  4          Mode  :character   Mode  :character   Mode  :character  
+##  5.9    :  4                                                                  
+##  6.8    :  4                                                                  
+##  10.8   :  3                                                                  
+##  (Other):112</code></pre>
+<pre class="r"><code>join %&gt;% summarise(region_count = n_distinct(region))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   region_count
+##          &lt;int&gt;
+## 1           19</code></pre>
+<pre class="r"><code>join &lt;- join %&gt;% mutate(happiness1 = as.numeric(join$happinesss)) %&gt;% select(-happinesss)
+join &lt;- join %&gt;% mutate(GDP1 = as.numeric(join$GDP)) %&gt;% select(-GDP)
+join &lt;- join %&gt;% mutate(population1 = as.numeric(join$population_thousands)) %&gt;% 
+    select(-population_thousands)
+join &lt;- join %&gt;% mutate(population_thousands = as.numeric(join$population1)) %&gt;% 
+    select(-population1)
+join &lt;- join %&gt;% mutate(life_female = as.numeric(join$life_fem), life_males = as.numeric(join$life_male)) %&gt;% 
+    select(-life_fem, -life_male)
+
+sd(join$Economy..GDP.per.Capita.)</code></pre>
+<pre><code>## [1] 0.4267451</code></pre>
+<pre class="r"><code>sd(join$Freedom)</code></pre>
+<pre><code>## [1] 0.1507341</code></pre>
+<pre class="r"><code>sd(join$Trust..Government.Corruption.)</code></pre>
+<pre><code>## [1] 0.1053945</code></pre>
+<pre class="r"><code>sd(join$happiness1)</code></pre>
+<pre><code>## [1] 1.153125</code></pre>
+<pre class="r"><code>join &lt;- join %&gt;% mutate(population = population_thousands * 1000)
+mean(join[join$region == &quot;NorthernEurope&quot;, ]$happiness1)</code></pre>
+<pre><code>## [1] 6.837</code></pre>
+<pre class="r"><code>join %&gt;% group_by(region) %&gt;% summarize(mean_happiness = mean(happiness1))</code></pre>
+<pre><code>## # A tibble: 19 x 2
+##    region            mean_happiness
+##    &lt;chr&gt;                      &lt;dbl&gt;
+##  1 Caribbean                   5.08
+##  2 CentralAmerica              6.22
+##  3 CentralAsia                 5.53
+##  4 EasternAfrica               4.18
+##  5 EasternAsia                 5.38
+##  6 EasternEurope               5.37
+##  7 MiddleAfrica                3.92
+##  8 NorthernAfrica              5.05
+##  9 NorthernAmerica             7.32
+## 10 NorthernEurope              6.84
+## 11 Oceania                     7.30
+## 12 South-easternAsia           5.50
+## 13 SouthAmerica                6.24
+## 14 SouthernAfrica              4.24
+## 15 SouthernAsia                4.63
+## 16 SouthernEurope              5.53
+## 17 WesternAfrica               4.10
+## 18 WesternAsia                 5.50
+## 19 WesternEurope               7.00</code></pre>
+<pre class="r"><code>join &lt;- join %&gt;% group_by(region) %&gt;% mutate(mean_happiness = mean(happiness1), mean_GDP = mean(Economy..GDP.per.Capita.))
+
+region_happy &lt;- join %&gt;% group_by(region) %&gt;% arrange(mean_happiness) %&gt;% select(region, 
+    mean_happiness)
+distinct(region_happy)</code></pre>
+<pre><code>## # A tibble: 19 x 2
+## # Groups:   region [19]
+##    region            mean_happiness
+##    &lt;chr&gt;                      &lt;dbl&gt;
+##  1 MiddleAfrica                3.92
+##  2 WesternAfrica               4.10
+##  3 EasternAfrica               4.18
+##  4 SouthernAfrica              4.24
+##  5 SouthernAsia                4.63
+##  6 NorthernAfrica              5.05
+##  7 Caribbean                   5.08
+##  8 EasternEurope               5.37
+##  9 EasternAsia                 5.38
+## 10 WesternAsia                 5.50
+## 11 South-easternAsia           5.50
+## 12 SouthernEurope              5.53
+## 13 CentralAsia                 5.53
+## 14 CentralAmerica              6.22
+## 15 SouthAmerica                6.24
+## 16 NorthernEurope              6.84
+## 17 WesternEurope               7.00
+## 18 Oceania                     7.30
+## 19 NorthernAmerica             7.32</code></pre>
+<p>The mean Freedom for the Northern Europe and Middle Africa region were found to be <strong>0.5239838</strong> and <strong>0.2351803</strong>, respectively. The summary() function was used to find the min, 1st quartile, median, mean, 3rd quartile, and the max for each numeric variable. The standard deviations of GDP per capita, freedom, government corruption, and happiness scores were found to be <strong>0.4267451</strong>, <strong>0.1507341</strong>, <strong>0.1053945</strong>, and <strong>1.153125</strong>, respectively. The mean happiness score for Northern Europe was found to be <strong>6.837</strong>, on a scale of 10.</p>
+<pre class="r"><code>ggplot(join, aes(x = Happiness.Rank, y = Freedom)) + geom_point() + geom_smooth() + 
+    theme(legend.position = &quot;none&quot;) + theme_minimal()</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-5-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>This plot of happiness rank and freedom scores shows that there is a negative correlation between the two variables. Thus, as a country has less freedom, its people are more unhappy.</p>
+<pre class="r"><code>ggplot(join, aes(x = Happiness.Rank, y = Trust..Government.Corruption.)) + geom_point() + 
+    theme(legend.position = &quot;none&quot;) + geom_smooth() + theme_minimal()</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>This plot of happiness rank and the amount of trust towards the government shows that there is a relative negative correlation between the two variables. Thus, as trust towards a country’s government increases, the happier the country is, on average.</p>
+<pre class="r"><code>ggplot(join, aes(x = region)) + geom_bar(aes(y = happiness1, fill = region), stat = &quot;summary&quot;, 
+    fun.y = &quot;mean&quot;) + coord_flip() + theme(legend.position = &quot;none&quot;) + geom_errorbar(aes(y = happiness1), 
+    stat = &quot;summary&quot;, fun.data = &quot;mean_se&quot;, width = 0.5)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-7-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>This plot displays mean happiness of countries in each region. This shows that the happiest regions are Oceania and Northern America, while the unhappiest region is Middle Africa.</p>
+<pre class="r"><code>ggplot(join, aes(x = happiness1, y = Freedom, color = region)) + geom_point(aes(x = happiness1), 
+    stat = &quot;summary&quot;, fun.y = &quot;mean&quot;) + theme(legend.key.size = unit(0.7, &quot;line&quot;))</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-8-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>This plot displays the happiness scores and amount of freedom of each country, grouped by region. This shows that there is a positive correlation between happiness scores and freedom, as the happiness scores increase as the freedom increases.</p>
+<pre class="r"><code>ggplot(join, aes(x = mean_happiness, y = mean_GDP, color = region)) + geom_point(size = 3) + 
+    theme_minimal() + theme(legend.key.size = unit(0.7, &quot;line&quot;))</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>This plot displays the happiness scores and GDP, averaged across countries in each region. This shows that as mean GDP of each region increases, so does the mean happiness. It is easy to see that Western Europe, Northern America, Northern Europe, and Oceania have the highest mean GDP and highest mean happiness.</p>
+<pre class="r"><code>join_numeric &lt;- join %&gt;% select(-country, -unemployment.percent)
+join_numeric$region = as.numeric(as.factor(join_numeric$region))
+join_pca &lt;- princomp(join_numeric %&gt;% scale %&gt;% cov)
+
+join_pca</code></pre>
+<pre><code>## Call:
+## princomp(x = join_numeric %&gt;% scale %&gt;% cov)
+## 
+## Standard deviations:
+##       Comp.1       Comp.2       Comp.3       Comp.4       Comp.5       Comp.6 
+## 1.436027e+00 5.681774e-01 3.707752e-01 3.034077e-01 2.126083e-01 1.590920e-01 
+##       Comp.7       Comp.8       Comp.9      Comp.10      Comp.11      Comp.12 
+## 1.316962e-01 1.029678e-01 7.320071e-02 6.941410e-02 3.961825e-02 1.170208e-02 
+##      Comp.13      Comp.14      Comp.15      Comp.16      Comp.17 
+## 4.890870e-03 2.712957e-03 5.250981e-04 5.344275e-09 5.315666e-09 
+## 
+##  17  variables and  17 observations.</code></pre>
+<pre class="r"><code>names(join_pca)</code></pre>
+<pre><code>## [1] &quot;sdev&quot;     &quot;loadings&quot; &quot;center&quot;   &quot;scale&quot;    &quot;n.obs&quot;    &quot;scores&quot;   &quot;call&quot;</code></pre>
+<pre class="r"><code>summary(join_pca, loadings = T)</code></pre>
+<pre><code>## Importance of components:
+##                           Comp.1    Comp.2     Comp.3     Comp.4     Comp.5
+## Standard deviation     1.4360273 0.5681774 0.37077522 0.30340766 0.21260834
+## Proportion of Variance 0.7567879 0.1184723 0.05045105 0.03378328 0.01658859
+## Cumulative Proportion  0.7567879 0.8752602 0.92571122 0.95949451 0.97608309
+##                             Comp.6      Comp.7      Comp.8      Comp.9
+## Standard deviation     0.159092011 0.131696169 0.102967797 0.073200706
+## Proportion of Variance 0.009288499 0.006364951 0.003890914 0.001966434
+## Cumulative Proportion  0.985371591 0.991736542 0.995627456 0.997593890
+##                            Comp.10      Comp.11      Comp.12      Comp.13
+## Standard deviation     0.069414104 0.0396182491 1.170208e-02 4.890870e-03
+## Proportion of Variance 0.001768252 0.0005760224 5.025448e-05 8.778513e-06
+## Cumulative Proportion  0.999362142 0.9999381648 9.999884e-01 9.999972e-01
+##                             Comp.14      Comp.15      Comp.16      Comp.17
+## Standard deviation     2.712957e-03 5.250981e-04 5.344275e-09 5.315666e-09
+## Proportion of Variance 2.701063e-06 1.011881e-07 1.048157e-17 1.036965e-17
+## Cumulative Proportion  9.999999e-01 1.000000e+00 1.000000e+00 1.000000e+00
+## 
+## Loadings:
+##                               Comp.1 Comp.2 Comp.3 Comp.4 Comp.5 Comp.6 Comp.7
+## Happiness.Rank                 0.332         0.202  0.141                0.134
+## Economy..GDP.per.Capita.      -0.322         0.157                0.119 -0.143
+## Family                        -0.286                       0.285  0.138 -0.553
+## Health..Life.Expectancy.      -0.323 -0.113  0.141         0.107 -0.100  0.162
+## Freedom                       -0.169        -0.430  0.320 -0.112  0.178 -0.369
+## Generosity                            0.227 -0.392  0.404  0.135 -0.717  0.133
+## Trust..Government.Corruption. -0.149  0.163 -0.272  0.331 -0.406  0.487  0.464
+## Dystopia.Residual                           -0.381 -0.702 -0.319 -0.166       
+## region                                       0.420  0.186 -0.743 -0.313 -0.295
+## happiness1                    -0.332        -0.206 -0.119               -0.146
+## GDP1                                 -0.510                                   
+## population_thousands           0.121 -0.551 -0.128  0.115                     
+## life_female                   -0.330 -0.104  0.151         0.156         0.153
+## life_males                    -0.320         0.130               -0.125  0.190
+## population                     0.121 -0.551 -0.128  0.115                     
+## mean_happiness                -0.314                                     0.239
+## mean_GDP                      -0.303         0.237                       0.174
+##                               Comp.8 Comp.9 Comp.10 Comp.11 Comp.12 Comp.13
+## Happiness.Rank                        0.143          0.144           0.150 
+## Economy..GDP.per.Capita.             -0.219 -0.174  -0.669  -0.349   0.102 
+## Family                        -0.465                 0.441   0.149         
+## Health..Life.Expectancy.       0.292 -0.165          0.170          -0.652 
+## Freedom                        0.542  0.395  0.161                         
+## Generosity                    -0.204                -0.111                 
+## Trust..Government.Corruption. -0.222 -0.206 -0.133   0.157                 
+## Dystopia.Residual                                            0.154         
+## region                                               0.175                 
+## happiness1                           -0.143                                
+## GDP1                          -0.234         0.800                         
+## population_thousands                        -0.365                         
+## life_female                    0.265                 0.169                 
+## life_males                     0.289 -0.243          0.190   0.103   0.720 
+## population                                  -0.365                         
+## mean_happiness                -0.191  0.578          0.247  -0.623         
+## mean_GDP                      -0.238  0.501         -0.303   0.640         
+##                               Comp.14 Comp.15 Comp.16 Comp.17
+## Happiness.Rank                         0.853                 
+## Economy..GDP.per.Capita.               0.258           0.306 
+## Family                                 0.104           0.208 
+## Health..Life.Expectancy.       0.451   0.110           0.171 
+## Freedom                                                0.108 
+## Generosity                                                   
+## Trust..Government.Corruption.                                
+## Dystopia.Residual                      0.260           0.351 
+## region                                                       
+## happiness1                             0.277          -0.827 
+## GDP1                                                         
+## population_thousands                          -0.707         
+## life_female                   -0.822   0.117                 
+## life_males                     0.308  -0.110                 
+## population                                     0.707         
+## mean_happiness                                               
+## mean_GDP</code></pre>
+<pre class="r"><code>eigjoin &lt;- join_pca$sdev^2
+varprop = round(eigjoin/sum(eigjoin), 2)
+ggplot() + geom_bar(aes(y = varprop, x = 1:17), stat = &quot;identity&quot;) + xlab(&quot;&quot;) + geom_path(aes(y = varprop, 
+    x = 1:17)) + geom_text(aes(x = 1:17, y = varprop, label = round(varprop, 2)), 
+    vjust = 1, col = &quot;white&quot;, size = 3) + scale_y_continuous(breaks = seq(0, 0.6, 
+    0.2), labels = scales::percent) + scale_x_continuous(breaks = 1:20)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-10-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>round(cumsum(eigjoin)/sum(eigjoin), 2)</code></pre>
+<pre><code>##  Comp.1  Comp.2  Comp.3  Comp.4  Comp.5  Comp.6  Comp.7  Comp.8  Comp.9 Comp.10 
+##    0.76    0.88    0.93    0.96    0.98    0.99    0.99    1.00    1.00    1.00 
+## Comp.11 Comp.12 Comp.13 Comp.14 Comp.15 Comp.16 Comp.17 
+##    1.00    1.00    1.00    1.00    1.00    1.00    1.00</code></pre>
+<pre class="r"><code>eigjoin</code></pre>
+<pre><code>##       Comp.1       Comp.2       Comp.3       Comp.4       Comp.5       Comp.6 
+## 2.062174e+00 3.228256e-01 1.374743e-01 9.205621e-02 4.520230e-02 2.531027e-02 
+##       Comp.7       Comp.8       Comp.9      Comp.10      Comp.11      Comp.12 
+## 1.734388e-02 1.060237e-02 5.358343e-03 4.818318e-03 1.569606e-03 1.369386e-04 
+##      Comp.13      Comp.14      Comp.15      Comp.16      Comp.17 
+## 2.392061e-05 7.360137e-06 2.757280e-07 2.856127e-17 2.825631e-17</code></pre>
+<pre class="r"><code>joind &lt;- data.frame(PC1 = join_pca$scores[, 1], PC2 = join_pca$scores[, 2])
+ggplot(joind, aes(PC1, PC2)) + geom_point()</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-10-2.png" width="768" style="display: block; margin: auto;" /></p>
+</div>

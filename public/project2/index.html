@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Alexis Ha" />
+    <meta name="description" content="Describe your website">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>Project 2: Modeling, Testing, and Predicting</title>
+    <meta name="generator" content="Hugo 0.61.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="/blog/">BLOG</a></li>
+        
+        <li><a href="/projects/">PROJECTS</a></li>
+        
+        <li><a href="/resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="/project2/">Project 2: Modeling, Testing, and Predicting</a></strong>
+          </h3>
+        </div>
+        <div class="blog-title">
+          <h4>
+          January 1, 0001
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<p><em>This dataset compiled information from 1338 individuals. Information on age, sex, bmi, number of children, whether they were smokers, the region of the country in which they lived, and how much health insurance companies charged these individuals in order for them to be insured was collected for each individual.</em></p>
+<pre class="r"><code>library(sandwich); library(lmtest)
+insurance&lt;-read.csv(&quot;insurance.csv&quot;)
+
+man&lt;-manova(cbind(bmi,charges)~sex, data=insurance)
+summary(man)</code></pre>
+<pre><code>## Df Pillai approx F num Df den Df Pr(&gt;F)
+## sex 1 0.0045581 3.0565 2 1335 0.04738 *
+## Residuals 1336
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>#reject: it is significant
+
+summary.aov(man)</code></pre>
+<pre><code>## Response bmi :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## sex 1 107 106.913 2.879 0.08998 .
+## Residuals 1336 49613 37.136
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Response charges :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## sex 1 6.4359e+08 643590180 4.3997 0.03613 *
+## Residuals 1336 1.9543e+11 146280413
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>insurance%&gt;%group_by(sex)%&gt;%summarize(mean(bmi), mean(charges))</code></pre>
+<pre><code>## # A tibble: 2 x 3
+##   sex    `mean(bmi)` `mean(charges)`
+##   &lt;fct&gt;        &lt;dbl&gt;           &lt;dbl&gt;
+## 1 female        30.4          12570.
+## 2 male          30.9          13957.</code></pre>
+<pre class="r"><code>pairwise.t.test(insurance$bmi, insurance$sex,
+                p.adj=&quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  insurance$bmi and insurance$sex 
+## 
+##      female
+## male 0.09  
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>#not significant
+pairwise.t.test(insurance$charges, insurance$sex,
+                p.adj=&quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  insurance$charges and insurance$sex 
+## 
+##      female
+## male 0.036 
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>#significant
+
+#1 MANOVA, 2 ANOVA, 2 t-tests
+.05/5</code></pre>
+<pre><code>## [1] 0.01</code></pre>
+<pre class="r"><code>#.01
+#no longer significant
+1-(.95^5)</code></pre>
+<pre><code>## [1] 0.2262191</code></pre>
+<pre class="r"><code>#probability of type I error = 0.2262191</code></pre>
+<p><em>5 t-tests were performed for 1 categorical variable+2numeric variables. Thus, the probability of a type I error is 1-(.95^5)=0.2262191 and the bonferroni correction is .05/5=0.01. With this correction, the <code>charges</code> variable is no linger significant. MANOVA assumptions include random samples &amp; independent observations, multivariate normality of DVs, homogeneity of within-group covariance matrices, linear relationships among DVs, no extreme univariate or multivariate outliers, and no multicollinearity. MANOVA assumptions are likely to be violated.</em></p>
+<pre class="r"><code>insurance&lt;-insurance%&gt;%mutate(y=ifelse(insurance$sex==&quot;male&quot;,0,1))
+
+insurance%&gt;%group_by(y)%&gt;%
+  summarize(means=mean(charges))%&gt;%summarize(`mean_diff:`=diff(means))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   `mean_diff:`
+##          &lt;dbl&gt;
+## 1       -1387.</code></pre>
+<pre class="r"><code>rand_dist&lt;-vector()
+for(i in 1:5000){
+  new&lt;-data.frame(charges=sample(insurance$charges), y=insurance$y)
+  rand_dist[i]&lt;-mean(new[new$y==&quot;1&quot;,]$charges)-
+    mean(new[new$y==&quot;0&quot;,]$charges)}
+
+{hist(rand_dist,main=&quot;&quot;,ylab=&quot;&quot;); abline(v = 1387.172,col=&quot;red&quot;)}</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-2-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>data.frame(rand_dist)%&gt;%ggplot(aes(rand_dist))+geom_histogram(aes(y=..density..),bins=30)+stat_function(fun=dt,geom=&quot;line&quot;)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-2-2.png" width="768" style="display: block; margin: auto;" /></p>
+<p><em>Null hypothesis: insurance charges for males and females are the same.</em>
+<em>Alternate hypothesis: insurance charges for males and females are significantly different.</em>
+<em>The results of the randomization test are normally distributed, thus, the insurance charges for males and females do not significantly differ.</em></p>
+<pre class="r"><code>library(sandwich)
+
+insurance$bmi_c&lt;-insurance$bmi-mean(insurance$bmi)
+insurance$charges_c&lt;-insurance$charges-mean(insurance$charges)
+
+fit&lt;-lm(charges_c~bmi_c*sex, data=insurance)
+coef(fit)</code></pre>
+<pre><code>##   (Intercept)         bmi_c       sexmale bmi_c:sexmale 
+##     -615.9725      297.1177     1168.8474      179.9607</code></pre>
+<pre class="r"><code>ggplot(fit, aes(x=bmi_c, y=charges_c,group=sex))+geom_point(aes(color=sex))+ geom_smooth(method=&quot;lm&quot;,formula=y~1,se=F,fullrange=T,aes(color=sex))+
+theme(legend.position=c(.9,.19))+xlab(&quot;&quot;)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-3-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#assumptions
+#linearity and homoskedasticity
+resids&lt;-fit$residuals
+fitvals&lt;-fit$fitted.values
+ggplot()+geom_point(aes(fitvals,resids))+geom_hline(yintercept=0, col=&quot;red&quot;)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-3-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>bptest(fit)</code></pre>
+<pre><code>## 
+##  studentized Breusch-Pagan test
+## 
+## data:  fit
+## BP = 127.08, df = 3, p-value &lt; 2.2e-16</code></pre>
+<pre class="r"><code>#normality
+ggplot()+geom_histogram(aes(resids),bins=20)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-3-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot()+geom_qq(aes(sample=resids))+geom_qq_line(aes(sample=resids))</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-3-4.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>summary(fit)$coef[,1:2]</code></pre>
+<pre><code>##                Estimate Std. Error
+## (Intercept)   -615.9725  461.30088
+## bmi_c          297.1177   76.27072
+## sexmale       1168.8474  648.96631
+## bmi_c:sexmale  179.9607  106.48927</code></pre>
+<pre class="r"><code>coeftest(fit, vcov=vcovHC(fit))[,1:2]</code></pre>
+<pre><code>##                Estimate Std. Error
+## (Intercept)   -615.9725  439.56341
+## bmi_c          297.1177   81.18712
+## sexmale       1168.8474  648.29266
+## bmi_c:sexmale  179.9607  116.52482</code></pre>
+<pre class="r"><code>summary(fit)</code></pre>
+<pre><code>##
+## Call:
+## lm(formula = charges_c ~ bmi_c * sex, data = insurance)
+##
+## Residuals:
+## Min 1Q Median 3Q Max
+## -23378 -8115 -3819 4773 48914
+##
+## Coefficients:
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) -615.97 461.30 -1.335 0.182008
+## bmi_c 297.12 76.27 3.896 0.000103 ***
+## sexmale 1168.85 648.97 1.801 0.071914 .
+## bmi_c:sexmale 179.96 106.49 1.690 0.091273 .
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Residual standard error: 11860 on 1334 degrees of
+freedom
+## Multiple R-squared: 0.0437, Adjusted R-squared: 0.04155
+## F-statistic: 20.32 on 3 and 1334 DF, p-value: 7.029e-13</code></pre>
+<pre class="r"><code>#0.04155 of the variation in the outcome can be explained by the overall model
+
+fit1&lt;-lm(charges_c~bmi_c+sex, data=insurance)
+coef(fit1)</code></pre>
+<pre><code>## (Intercept)       bmi_c     sexmale 
+##   -589.6023    389.4347   1166.9940</code></pre>
+<pre class="r"><code>lrtest(fit, fit1)</code></pre>
+<pre><code>## Likelihood ratio test
+##
+## Model 1: charges_c ~ bmi_c * sex
+## Model 2: charges_c ~ bmi_c + sex
+## #Df LogLik Df Chisq Pr(&gt;Chisq)
+## 1 5 -14448
+## 2 4 -14449 -1 2.8614 0.09073 .
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<p><em>For every unit increase in BMI, insurance charges can be expected to increase by approximately $297.12. For an individual who has a BMI of 0 and is neither male nor female, the insurance charges is estimated to be -$615.97. Before the robust SE, the intercept SE was 461.30088, the centered BMI SE was 76.27072, the male SE was 648.96631, and the SE of male centered BMI was 106.48927. After the robust SE, these values were 439.56341, 81.18712, 648.29266, and 116.52482, respectively. 0.04155 of the variation in the outcome can be explained by the overall model.</em></p>
+<pre class="r"><code>fit&lt;-lm(charges_c~bmi_c*y, data=insurance)
+coef(fit)</code></pre>
+<pre><code>## (Intercept)       bmi_c           y     bmi_c:y 
+##    552.8749    477.0783  -1168.8474   -179.9607</code></pre>
+<pre class="r"><code>samp_distn&lt;-replicate(5000, {
+  boot_insurance&lt;-insurance[sample(nrow(insurance), replace=TRUE),]
+  fit2&lt;-lm(charges_c~bmi_c*y, data=boot_insurance)
+  coef(fit2)
+})
+samp_distn%&gt;%t%&gt;%as.data.frame()%&gt;%summarise_all(sd)</code></pre>
+<pre><code>##   (Intercept)    bmi_c        y  bmi_c:y
+## 1    468.7299 81.56309 651.9844 116.2269</code></pre>
+<p><em>The original SEs were as follows: the intercept SE was 461.30088, the centered BMI SE was 76.27072, the male SE was 648.96631, and the SE of male centered BMI was 106.48927. After the robust SE, these values were 439.56341, 81.18712, 648.29266, and 116.52482, respectively. 0.04155 of the variation in the outcome can be explained by the overall model. After bootstrapped SEs, these values were 483.6155, 83.82299, 652.7768, and 115.6535, respectively.</em></p>
+<pre class="r"><code>library(glmnet)
+
+fit3&lt;-glm(y~charges+bmi,data=insurance,family=binomial(link=&quot;logit&quot;))
+coeftest(fit3)</code></pre>
+<pre><code>##
+## z test of coefficients:
+##
+## Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept) 4.5794e-01 2.8160e-01 1.6262 0.10390
+## charges -8.3447e-06 4.6500e-06 -1.7946 0.07272 .
+## bmi -1.2016e-02 9.1804e-03 -1.3089 0.19057
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>exp(coef(fit3))</code></pre>
+<pre><code>## (Intercept)     charges         bmi 
+##   1.5808170   0.9999917   0.9880557</code></pre>
+<pre class="r"><code>prob &lt;- predict(fit3,type=&quot;response&quot;)
+table(predict=as.numeric(prob&gt;.5), truth=insurance$y)%&gt;%addmargins</code></pre>
+<pre><code>##        truth
+## predict    0    1  Sum
+##     0    337  310  647
+##     1    339  352  691
+##     Sum  676  662 1338</code></pre>
+<pre class="r"><code>#accuracy
+(337+352)/1338</code></pre>
+<pre><code>## [1] 0.5149477</code></pre>
+<pre class="r"><code>#0.5149477
+
+#sensitivity
+339/676</code></pre>
+<pre><code>## [1] 0.5014793</code></pre>
+<pre class="r"><code>#0.5014793
+
+#specificity
+337/647</code></pre>
+<pre><code>## [1] 0.5208655</code></pre>
+<pre class="r"><code>#0.5208655
+
+#PPV
+339/691</code></pre>
+<pre><code>## [1] 0.4905933</code></pre>
+<pre class="r"><code>#0.4905933
+
+#density plot
+insurance$logit&lt;-predict(fit3,type=&quot;link&quot;)
+insurance%&gt;%ggplot()+geom_density(aes(logit,fill=y, color=y), alpha=.4)+
+  theme(legend.position=c(.85,.85))+geom_vline(xintercept=0)+xlab(&quot;predictor (logit)&quot;)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-5-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#ROC
+library(plotROC)
+ROCplot&lt;-ggplot(insurance)+geom_roc(aes(d=y,m=charges), n.cuts=0)
+ROCplot</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-5-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>calc_auc(ROCplot)</code></pre>
+<pre><code>##   PANEL group       AUC
+## 1     1    -1 0.4945029</code></pre>
+<pre class="r"><code>#AUC = 0.4945029    
+
+#10-fold CV
+set.seed(1234)
+k=10
+data&lt;-insurance[sample(nrow(insurance)),]
+folds&lt;-cut(seq(1:nrow(insurance)), breaks = k, labels=F)
+
+
+class_diag&lt;-function(probs,truth){
+  
+  tab&lt;-table(factor(probs&gt;.5,levels=c(&quot;FALSE&quot;,&quot;TRUE&quot;)),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+
+  if(is.numeric(truth)==FALSE &amp; is.logical(truth)==FALSE) truth&lt;-as.numeric(truth)-1
+  
+  #CALCULATE EXACT AUC
+  ord&lt;-order(probs, decreasing=TRUE)
+  probs &lt;- probs[ord]; truth &lt;- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup&lt;-c(probs[-1]&gt;=probs[-length(probs)], FALSE)
+  TPR&lt;-c(0,TPR[!dup],1); FPR&lt;-c(0,FPR[!dup],1)
+  
+  n &lt;- length(TPR)
+  auc&lt;- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+
+diags&lt;-NULL
+for(i in 1:k){
+  train&lt;-data[folds!=i,]
+  test&lt;-data[folds==i,]
+  truth&lt;-test$y
+  fit4&lt;-glm(y~charges+bmi,data=train,family=&quot;binomial&quot;)
+  prob1&lt;-predict(fit4,newdata=test, type=&quot;response&quot;)
+  diags&lt;-rbind(diags, class_diag(prob1, truth))
+}
+apply(diags,2,mean)</code></pre>
+<pre><code>##       acc      sens      spec       ppv       auc 
+## 0.4962518 0.5129434 0.4902950 0.5015182 0.5112349</code></pre>
+<pre class="r"><code>#accuracy = 0.4985075
+#sensitivity = 0.5216395
+#ppv = 0.5016414
+
+1.5808170/(1+1.5808170)</code></pre>
+<pre><code>## [1] 0.6125258</code></pre>
+<pre class="r"><code>#0.6125258</code></pre>
+<p><em>The odds of being a male is 1.5808170. Thus, the probability of being male is 1.5808170/(1+1.5808170) = 0.6125258. 0.9999917 corresponds to the odds of an individual with $0 insurance charge being male. 0.9880557 corresponds to the odds of an individual with a BMI of 0 being male. The accuracy, sensitivity, specificity, and PPV are 0.5149477, 0.5014793, 0.5208655, and 0.4905933, respectively. The ROC plot shows that TPR and FPR are essentially the same; thus, it is a chance prediction. This is verified by the AUC, which was calculated to be 0.4945029. The accuracy, sensitivity, and ppv for the 10-fold CV were 0.4985075, 0.5216395, and 0.5016414, respectively.</em></p>
+<pre class="r"><code>fit4&lt;-glm(sex~-1+smoker+age+bmi+children+region+charges, data=insurance, family = &quot;binomial&quot;)
+y&lt;-as.matrix(insurance$sex)
+x&lt;-model.matrix(fit4)
+x&lt;-scale(x)
+
+cv&lt;-cv.glmnet(x,y,family=&quot;binomial&quot;)
+lasso&lt;-glmnet(x,y,family=&quot;binomial&quot;, lambda=cv$lambda.1se)
+coef(lasso)</code></pre>
+<pre><code>## 10 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                            s0
+## (Intercept)      2.094097e-02
+## smokerno        -3.714744e-02
+## smokeryes        7.287479e-15
+## age              .           
+## bmi              .           
+## children         .           
+## regionnorthwest  .           
+## regionsoutheast  .           
+## regionsouthwest  .           
+## charges          .</code></pre>
+<pre class="r"><code>#10-fold CV
+insur&lt;-insurance%&gt;%select(age, bmi, charges, sex)
+
+set.seed(1234)
+k=10
+data1&lt;-insur[sample(nrow(insur)),]
+folds1&lt;-cut(seq(1:nrow(insur)), breaks = k, labels=F)
+diags&lt;-NULL
+for(i in 1:k){
+  train1&lt;-insur[folds!=i,]
+  test1&lt;-insur[folds==i,]
+  truth1&lt;-test1$sex
+  fit5&lt;-glm(sex~age+bmi+charges, data=train1, family=&quot;binomial&quot;)
+  prob2&lt;-predict(fit5, newdata=test1, type =&quot;response&quot;)
+  preds&lt;-ifelse(prob2&gt;.5,1,0)
+  diags1&lt;-rbind(diags, class_diag(prob2, truth1))
+}
+diags1%&gt;%summarise_all(mean)</code></pre>
+<pre><code>##         acc      sens spec       ppv       auc
+## 1 0.4850746 0.4714286  0.5 0.5076923 0.5323661</code></pre>
+<p><em>The variables that were retained from the LASSO were age, bmi, and charges. The accuracy decreased from 0.4985075 to 0.4850746 .</em></p>
+
+              <hr>
+              <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div>
+            </div>
+          </div>
+          <hr>
+        <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+        </div>
+      </div>
+      
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="/js/docs.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

@@ -1,0 +1,138 @@
+---
+title: "project1"
+output: html_document
+date: 'October 21, 2019'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r global_options, include=FALSE}
+library(knitr)
+opts_chunk$set(fig.align="center", fig.height=5, message=FALSE, warning=FALSE, fig.width=8, tidy=TRUE)
+```
+
+## Alexis Ha ah48766
+
+```{R}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+happiness<-read.csv("2017.csv")
+country_profile_variables<-read.csv("country_profile_variables.csv")
+```
+
+The `country_profile_variable` dataset provides information on 229 countries. This information includes population, surface area, GDP, life expectancy, rates of employment/unemployment, etc. The `happiness` dataset also provides information on countries around the world, some of which is not included in the `country_profile_variables` dataset, such as average happiness, freedom, government corruption, and family. These two datasets can be analyzed together to determine if there are any correlations between these variables and the average happiness of each country. These datasets were retrieved from Kaggle.
+
+```{R}
+hap <- pivot_wider(`happiness`, names_from = Happiness.Score, values_from = Country)
+happy <- hap %>% pivot_longer(11:161, names_to = "happinesss", values_to = "country") %>% na.omit
+
+chiao <- country_profile_variables %>% mutate(region = Region, population_thousands = Population.in.thousands..2017.,
+GDP = GDP..Gross.domestic.product..million.current.US.., unemployment.percent = Unemployment....of.labour.force.,
+life.expect = Life.expectancy.at.birth..females.males..years.) %>% select(country,region, population_thousands, GDP, unemployment.percent, life.expect)
+
+hola <- pivot_wider(chiao, names_from = "region", values_from = "country")
+country <- hola %>% pivot_longer(5:26, names_to = "region", values_to = "country") %>% na.omit
+```
+
+The datasets were both made untidy by using pivot_wider(); in the `happiness` dataset, the happiness score values were used as the column names and in the `country_profile_variables` dataset, the regions were used as the column names. The datasets were then both made tidy using pivot_longer() to restore the happiness scores and region names back to the original variables.
+
+```{R}
+join <- happy %>% inner_join(country, by="country")
+head(join)
+
+join <- join %>% select(-Whisker.high, -Whisker.low)
+join <- join %>% separate(life.expect, into=c("life_fem", "life_male"), sep = "/")
+
+```
+
+The datasets were joined by country using inner_join(), to retain data for countries that were in both datasets. From the `happiness` dataset, all the following variables were retained, with the exception of Whisker.high and Whisker.low. In the `country_profile_variables` dataset, the following variables were retained: country, region, population, life expectancy, and unemployment. These variables were all chosen as I could potentially see them as having a correlation with the average happiness per country.
+
+```{R}
+join%>%select_if(is.numeric)%>%scale%>%cor()
+
+mean(join[join$region=="NorthernEurope",]$Freedom)
+mean(join[join$region=="MiddleAfrica",]$Freedom)
+summary(join)
+join %>% summarise(region_count = n_distinct(region))
+
+join <- join%>% mutate(happiness1=as.numeric(join$happinesss)) %>% select(-happinesss)
+join <- join%>% mutate(GDP1=as.numeric(join$GDP)) %>% select(-GDP)
+join <- join%>% mutate(population1=as.numeric(join$population_thousands)) %>% select(-population_thousands)
+join <- join%>% mutate(population_thousands=as.numeric(join$population1)) %>% select(-population1)
+join <- join%>% mutate(life_female=as.numeric(join$life_fem), life_males=as.numeric(join$life_male)) %>% select(-life_fem, -life_male)
+
+sd(join$Economy..GDP.per.Capita.)
+sd(join$Freedom)
+sd(join$Trust..Government.Corruption.)
+sd(join$happiness1)
+
+join <-join %>% mutate(population=population_thousands*1000)
+mean(join[join$region=="NorthernEurope",]$happiness1)
+
+join %>% group_by(region) %>% summarize(mean_happiness=mean(happiness1))
+join <- join%>% group_by(region) %>% mutate(mean_happiness=mean(happiness1), mean_GDP=mean(Economy..GDP.per.Capita.))
+
+region_happy <- join %>% group_by(region)  %>% arrange(mean_happiness) %>% select(region, mean_happiness)
+distinct(region_happy)
+```
+
+The mean Freedom for the Northern Europe and Middle Africa region were found to be **0.5239838** and **0.2351803**, respectively. The summary() function was used to find the min, 1st quartile, median, mean, 3rd quartile, and the max for each numeric variable. The standard deviations of GDP per capita, freedom, government corruption, and happiness scores were found to be **0.4267451**, **0.1507341**, **0.1053945**, and **1.153125**, respectively. The mean happiness score for Northern Europe was found to be **6.837**, on a scale of 10. 
+
+```{R}
+ggplot(join, aes(x=Happiness.Rank, y=Freedom)) + geom_point() + geom_smooth() + theme(legend.position = "none") + theme_minimal()
+```
+
+This plot of happiness rank and freedom scores shows that there is a negative correlation between the two variables. Thus, as a country has less freedom, its people are more unhappy. 
+
+```{R}
+ggplot(join, aes(x=Happiness.Rank, y=Trust..Government.Corruption.)) + geom_point() + theme(legend.position = "none") + geom_smooth() + theme_minimal()
+```
+
+This plot of happiness rank and the amount of trust towards the government shows that there is a relative negative correlation between the two variables. Thus, as trust towards a country's government increases, the happier the country is, on average.
+
+```{R}
+ggplot(join, aes(x=region)) + geom_bar(aes(y=happiness1, fill=region), stat = "summary", fun.y="mean") + coord_flip() + theme(legend.position = "none") + geom_errorbar(aes(y=happiness1), stat="summary", fun.data="mean_se", width=.5)
+```
+
+This plot displays mean happiness of countries in each region. This shows that the happiest regions are Oceania and Northern America, while the unhappiest region is Middle Africa.
+
+```{R}
+ggplot(join, aes(x=happiness1, y=Freedom, color=region)) + geom_point(aes(x=happiness1),stat = "summary", fun.y="mean") + theme(legend.key.size = unit(.7,"line"))
+```
+
+This plot displays the happiness scores and amount of freedom of each country, grouped by region. This shows that there is a positive correlation between happiness scores and freedom, as the happiness scores increase as the freedom increases.
+
+```{R}
+ggplot(join, aes(x=mean_happiness, y=mean_GDP, color=region)) + geom_point(size=3) + theme_minimal() + theme(legend.key.size = unit(.7,"line"))
+```
+
+This plot displays the happiness scores and GDP, averaged across countries in each region. This shows that as mean GDP of each region increases, so does the mean happiness. It is easy to see that Western Europe, Northern America, Northern Europe, and Oceania have the highest mean GDP and highest mean happiness.
+
+```{R}
+join_numeric <- join %>% select(-country, -unemployment.percent)
+join_numeric$region = as.numeric(as.factor(join_numeric$region))
+join_pca <- princomp(join_numeric%>%scale%>%cov)
+
+join_pca
+names(join_pca)
+summary(join_pca, loadings=T)
+
+eigjoin<-join_pca$sdev^2
+varprop=round(eigjoin/sum(eigjoin),2)
+ggplot()+geom_bar(aes(y=varprop,x=1:17),stat="identity")+xlab("")+geom_path(aes(y=varprop,x=1:17))+
+  geom_text(aes(x=1:17,y=varprop,label=round(varprop,2)),vjust=1,col="white",size=3)+
+  scale_y_continuous(breaks=seq(0,.6,.2),labels = scales::percent)+
+  scale_x_continuous(breaks=1:20)
+
+round(cumsum(eigjoin)/sum(eigjoin),2)
+eigjoin
+
+joind<-data.frame(PC1=join_pca$scores[,1], PC2=join_pca$scores[,2])
+ggplot(joind,aes(PC1, PC2))+geom_point()
+```
+
+

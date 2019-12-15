@@ -1,0 +1,258 @@
+---
+title: 'Project 2: Modeling, Testing, and Predicting'
+author: "SDS348 Fall 2019"
+date: 'November 27, 2019'
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = knitr:::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE,fig.align="center",warning=FALSE,message=FALSE,fig.width=8, fig.height=5, linewidth=60)
+options(tibble.width = 100,width = 100)
+library(tidyverse)
+```
+
+*This dataset compiled information from 1338 individuals. Information on age, sex, bmi, number of children, whether they were smokers, the region of the country in which they lived, and how much health insurance companies charged these individuals in order for them to be insured was collected for each individual.*
+
+```{R}
+library(sandwich); library(lmtest)
+insurance<-read.csv("insurance.csv")
+
+man<-manova(cbind(bmi,charges)~sex, data=insurance)
+summary(man)
+#reject: it is significant
+
+summary.aov(man)
+insurance%>%group_by(sex)%>%summarize(mean(bmi), mean(charges))
+
+pairwise.t.test(insurance$bmi, insurance$sex,
+                p.adj="none")
+#not significant
+pairwise.t.test(insurance$charges, insurance$sex,
+                p.adj="none")
+#significant
+
+#1 MANOVA, 2 ANOVA, 2 t-tests
+.05/5
+#.01
+#no longer significant
+1-(.95^5)
+#probability of type I error = 0.2262191
+```
+
+*5 t-tests were performed for 1 categorical variable+2numeric variables. Thus, the probability of a type I error is 1-(.95^5)=0.2262191 and the bonferroni correction is .05/5=0.01. With this correction, the `charges` variable is no linger significant. MANOVA assumptions include random samples & independent observations, multivariate normality of DVs, homogeneity of within-group covariance matrices, linear relationships among DVs, no extreme univariate or multivariate outliers, and no multicollinearity. MANOVA assumptions are likely to be violated.*
+
+```{R}
+insurance<-insurance%>%mutate(y=ifelse(insurance$sex=="male",0,1))
+
+insurance%>%group_by(y)%>%
+  summarize(means=mean(charges))%>%summarize(`mean_diff:`=diff(means))
+
+rand_dist<-vector()
+for(i in 1:5000){
+  new<-data.frame(charges=sample(insurance$charges), y=insurance$y)
+  rand_dist[i]<-mean(new[new$y=="1",]$charges)-
+    mean(new[new$y=="0",]$charges)}
+
+{hist(rand_dist,main="",ylab=""); abline(v = 1387.172,col="red")}
+
+data.frame(rand_dist)%>%ggplot(aes(rand_dist))+geom_histogram(aes(y=..density..),bins=30)+stat_function(fun=dt,geom="line")
+```
+
+*Null hypothesis: insurance charges for males and females are the same.*
+*Alternate hypothesis: insurance charges for males and females are significantly different.*
+*The results of the randomization test are normally distributed, thus, the insurance charges for males and females do not significantly differ.*
+
+```{R}
+library(sandwich)
+
+insurance$bmi_c<-insurance$bmi-mean(insurance$bmi)
+insurance$charges_c<-insurance$charges-mean(insurance$charges)
+
+fit<-lm(charges_c~bmi_c*sex, data=insurance)
+coef(fit)
+
+ggplot(fit, aes(x=bmi_c, y=charges_c,group=sex))+geom_point(aes(color=sex))+ geom_smooth(method="lm",formula=y~1,se=F,fullrange=T,aes(color=sex))+
+theme(legend.position=c(.9,.19))+xlab("")
+
+#assumptions
+#linearity and homoskedasticity
+resids<-fit$residuals
+fitvals<-fit$fitted.values
+ggplot()+geom_point(aes(fitvals,resids))+geom_hline(yintercept=0, col="red")
+bptest(fit)
+#normality
+ggplot()+geom_histogram(aes(resids),bins=20)
+ggplot()+geom_qq(aes(sample=resids))+geom_qq_line(aes(sample=resids))
+
+summary(fit)$coef[,1:2]
+coeftest(fit, vcov=vcovHC(fit))[,1:2]
+
+summary(fit)
+#0.04155 of the variation in the outcome can be explained by the overall model
+
+fit1<-lm(charges_c~bmi_c+sex, data=insurance)
+coef(fit1)
+
+lrtest(fit, fit1)
+```
+
+*For every unit increase in BMI, insurance charges can be expected to increase by approximately $297.12. For an individual who has a BMI of 0 and is neither male nor female, the insurance charges is estimated to be -$615.97. Before the robust SE, the intercept SE was 461.30088, the centered BMI SE was 76.27072, the male SE was 648.96631, and the SE of male centered BMI was 106.48927. After the robust SE, these values were 439.56341, 81.18712, 648.29266, and 116.52482, respectively. 0.04155 of the variation in the outcome can be explained by the overall model.*
+
+```{R}
+fit<-lm(charges_c~bmi_c*y, data=insurance)
+coef(fit)
+
+samp_distn<-replicate(5000, {
+  boot_insurance<-insurance[sample(nrow(insurance), replace=TRUE),]
+  fit2<-lm(charges_c~bmi_c*y, data=boot_insurance)
+  coef(fit2)
+})
+samp_distn%>%t%>%as.data.frame()%>%summarise_all(sd)
+```
+
+*The original SEs were as follows: the intercept SE was 461.30088, the centered BMI SE was 76.27072, the male SE was 648.96631, and the SE of male centered BMI was 106.48927. After the robust SE, these values were 439.56341, 81.18712, 648.29266, and 116.52482, respectively. 0.04155 of the variation in the outcome can be explained by the overall model. After bootstrapped SEs, these values were 483.6155, 83.82299, 652.7768, and 115.6535, respectively.*
+
+```{R}
+library(glmnet)
+
+fit3<-glm(y~charges+bmi,data=insurance,family=binomial(link="logit"))
+coeftest(fit3)
+exp(coef(fit3))
+
+prob <- predict(fit3,type="response")
+table(predict=as.numeric(prob>.5), truth=insurance$y)%>%addmargins
+
+#accuracy
+(337+352)/1338
+#0.5149477
+
+#sensitivity
+339/676
+#0.5014793
+
+#specificity
+337/647
+#0.5208655
+
+#PPV
+339/691
+#0.4905933
+
+#density plot
+insurance$logit<-predict(fit3,type="link")
+insurance%>%ggplot()+geom_density(aes(logit,fill=y, color=y), alpha=.4)+
+  theme(legend.position=c(.85,.85))+geom_vline(xintercept=0)+xlab("predictor (logit)")
+
+#ROC
+library(plotROC)
+ROCplot<-ggplot(insurance)+geom_roc(aes(d=y,m=charges), n.cuts=0)
+ROCplot
+calc_auc(ROCplot)
+#AUC = 0.4945029	
+
+#10-fold CV
+set.seed(1234)
+k=10
+data<-insurance[sample(nrow(insurance)),]
+folds<-cut(seq(1:nrow(insurance)), breaks = k, labels=F)
+
+
+class_diag<-function(probs,truth){
+  
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+  
+  #CALCULATE EXACT AUC
+  ord<-order(probs, decreasing=TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  
+  n <- length(TPR)
+  auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+
+diags<-NULL
+for(i in 1:k){
+  train<-data[folds!=i,]
+  test<-data[folds==i,]
+  truth<-test$y
+  fit4<-glm(y~charges+bmi,data=train,family="binomial")
+  prob1<-predict(fit4,newdata=test, type="response")
+  diags<-rbind(diags, class_diag(prob1, truth))
+}
+apply(diags,2,mean)
+#accuracy = 0.4985075
+#sensitivity = 0.5216395
+#ppv = 0.5016414
+
+1.5808170/(1+1.5808170)
+#0.6125258
+```
+
+*The odds of being a male is 1.5808170. Thus, the probability of being male is 1.5808170/(1+1.5808170) = 0.6125258. 0.9999917 corresponds to the odds of an individual with $0 insurance charge being male. 0.9880557 corresponds to the odds of an individual with a BMI of 0 being male. The accuracy, sensitivity, specificity, and PPV are 0.5149477, 0.5014793, 0.5208655, and 0.4905933, respectively. The ROC plot shows that TPR and FPR are essentially the same; thus, it is a chance prediction. This is verified by the AUC, which was calculated to be 0.4945029. The accuracy, sensitivity, and ppv for the 10-fold CV were 0.4985075, 0.5216395, and 0.5016414, respectively.*
+
+```{R}
+
+fit4<-glm(sex~-1+smoker+age+bmi+children+region+charges, data=insurance, family = "binomial")
+y<-as.matrix(insurance$sex)
+x<-model.matrix(fit4)
+x<-scale(x)
+
+cv<-cv.glmnet(x,y,family="binomial")
+lasso<-glmnet(x,y,family="binomial", lambda=cv$lambda.1se)
+coef(lasso)
+
+#10-fold CV
+insur<-insurance%>%select(age, bmi, charges, sex)
+
+set.seed(1234)
+k=10
+data1<-insur[sample(nrow(insur)),]
+folds1<-cut(seq(1:nrow(insur)), breaks = k, labels=F)
+diags<-NULL
+for(i in 1:k){
+  train1<-insur[folds!=i,]
+  test1<-insur[folds==i,]
+  truth1<-test1$sex
+  fit5<-glm(sex~age+bmi+charges, data=train1, family="binomial")
+  prob2<-predict(fit5, newdata=test1, type ="response")
+  preds<-ifelse(prob2>.5,1,0)
+  diags1<-rbind(diags, class_diag(prob2, truth1))
+}
+diags1%>%summarise_all(mean)
+
+```
+
+*The variables that were retained from the LASSO were age, bmi, and charges. The accuracy decreased from 0.4985075 to 0.4850746	.*
