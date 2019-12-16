@@ -5,13 +5,15 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "4141123067",
+    "hash" : "407828866",
     "id" : "9A7E66E3",
-    "lastKnownWriteTime" : 1576451963,
-    "last_content_update" : 1576451963,
+    "lastKnownWriteTime" : 1576456071,
+    "last_content_update" : 1576456071745,
     "path" : "~/Desktop/website1/content/blog/2019-12-15-python.Rmd",
     "project_path" : "content/blog/2019-12-15-python.Rmd",
     "properties" : {
+        "cursorPosition" : "9,0",
+        "scrollLine" : "0"
     },
     "read_only" : false,
     "read_only_alternatives" : [

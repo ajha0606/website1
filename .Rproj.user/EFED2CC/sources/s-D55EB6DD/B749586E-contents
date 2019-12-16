@@ -5,3 +5,4 @@ blogdown::serve_site()
 blogdown::hugo_version()
 
 library(reticulate)
+py_install("pandas")

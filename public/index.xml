@@ -12,6 +12,15 @@
     
     
     <item>
+      <title>About Me</title>
+      <link>/home/about-me/</link>
+      <pubDate>Sun, 15 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/home/about-me/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Python</title>
       <link>/blog/python/</link>
       <pubDate>Sun, 15 Dec 2019 00:00:00 +0000</pubDate>
