@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1576456584513.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2698470173",
+    "id" : "DDE37767",
+    "lastKnownWriteTime" : 1576457776,
+    "last_content_update" : 1576457776146,
+    "path" : "~/Desktop/website1/content/about/2019-12-15-about-me.Rmd",
+    "project_path" : "content/about/2019-12-15-about-me.Rmd",
+    "properties" : {
+        "cursorPosition" : "24,128",
+        "scrollLine" : "3"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 9,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

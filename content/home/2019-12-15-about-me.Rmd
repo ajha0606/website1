@@ -1,9 +1,0 @@
----
-title: About Me
-author: Alexis Ha
-date: '2019-12-15'
-slug: about-me
-categories: []
-tags: []
-description: ''
----
