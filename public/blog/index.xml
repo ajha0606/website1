@@ -17,7 +17,8 @@
       <pubDate>Sun, 15 Dec 2019 00:00:00 +0000</pubDate>
       
       <guid>/blog/python/</guid>
-      <description></description>
+      <description>Here are some examples of some RegEx codes I can work with:
+import re string1=&amp;quot;We have to extract these numbers 12, 47, 48 The integers numbers are also interesting: 189 2036 314\&amp;#39;,\&amp;#39; is a separator, so please extract these numbers 125,789,1450 and also these 564,90456 We like to offer you 7890$ per month in order to complete this task... we are joking&amp;quot; print(string1) ## We have to extract these numbers 12, 47, 48 The integers numbers are also interesting: 189 2036 314&amp;#39;,&amp;#39; is a separator, so please extract these numbers 125,789,1450 and also these 564,90456 We like to offer you 7890$ per month in order to complete this task.</description>
     </item>
     
   </channel>

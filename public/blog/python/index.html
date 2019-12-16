@@ -72,7 +72,239 @@
               
 
 
+<p><strong>Here are some examples of some RegEx codes I can work with:</strong></p>
+<pre class="python"><code>import re
 
+string1=&quot;We have to extract these numbers 12, 47, 48 The integers numbers are also interesting: 189 2036 314\&#39;,\&#39; is a separator, so please extract these numbers 125,789,1450 and also these 564,90456 We like to offer you 7890$ per month in order to complete this task... we are joking&quot;
+print(string1)</code></pre>
+<pre><code>## We have to extract these numbers 12, 47, 48 The integers numbers are also interesting: 189 2036 314&#39;,&#39; is a separator, so please extract these numbers 125,789,1450 and also these 564,90456 We like to offer you 7890$ per month in order to complete this task... we are joking</code></pre>
+<pre class="python"><code>re.findall(r&quot;\b\d+\b&quot;,string1)</code></pre>
+<pre><code>## [&#39;12&#39;, &#39;47&#39;, &#39;48&#39;, &#39;189&#39;, &#39;2036&#39;, &#39;314&#39;, &#39;125&#39;, &#39;789&#39;, &#39;1450&#39;, &#39;564&#39;, &#39;90456&#39;, &#39;7890&#39;]</code></pre>
+<pre class="python"><code>string3=r&quot;Fedora Core       ftp     \
+Fedora Extras   http    ftp     rsync\
+          ftp://ftp7.br.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp3.de.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp.is.FreeBSD.org/pub/FreeBSD/ (ftp / rsync)\
+          ftp://ftp4.jp.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp.no.FreeBSD.org/pub/FreeBSD/ (ftp / rsync)\
+        *\
+          ftp://ftp3.no.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp.pt.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp1.ro.FreeBSD.org/pub/FreeBSD/ (ftp / ftpv6)\
+          ftp://ftp3.es.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp2.tw.FreeBSD.org/pub/FreeBSD/ (ftp / ftpv6 / http / httpv6 / rsync / rsyncv6)\
+          ftp://ftp6.uk.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp6.us.FreeBSD.org/pub/FreeBSD/ (ftp / http)&quot;
+          
+re.findall(r&quot;ftp[s]?://(?:[\w/]|[\d]|[\S]|[!*\(\),]|(?:%[\w/][\w/]))+&quot;, string3)</code></pre>
+<pre><code>## [&#39;ftp://ftp7.br.FreeBSD.org/pub/FreeBSD/&#39;, &#39;ftp://ftp3.de.FreeBSD.org/pub/FreeBSD/&#39;, &#39;ftp://ftp.is.FreeBSD.org/pub/FreeBSD/&#39;, &#39;ftp://ftp4.jp.FreeBSD.org/pub/FreeBSD/&#39;, &#39;ftp://ftp.no.FreeBSD.org/pub/FreeBSD/&#39;, &#39;ftp://ftp3.no.FreeBSD.org/pub/FreeBSD/&#39;, &#39;ftp://ftp.pt.FreeBSD.org/pub/FreeBSD/&#39;, &#39;ftp://ftp1.ro.FreeBSD.org/pub/FreeBSD/&#39;, &#39;ftp://ftp3.es.FreeBSD.org/pub/FreeBSD/&#39;, &#39;ftp://ftp2.tw.FreeBSD.org/pub/FreeBSD/&#39;, &#39;ftp://ftp6.uk.FreeBSD.org/pub/FreeBSD/&#39;, &#39;ftp://ftp6.us.FreeBSD.org/pub/FreeBSD/&#39;]</code></pre>
+<pre class="python"><code>string8=&quot;Call me Ishmael. Some years ago — never mind how long precisely — having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world. It is a way I have of driving off the spleen, and regulating the circulation. Whenever I find myself growing grim about the mouth; whenever it is a damp, drizzly November in my soul; whenever I find myself involuntarily pausing before coffin warehouses, and bringing up the rear of every funeral I meet; and especially whenever my hypos get such an upper hand of me, that it requires a strong moral principle to prevent me from deliberately stepping into the street, and methodically knocking people’s hats off — then, I account it high time to get to sea as soon as I can. This is my substitute for pistol and ball. With a philosophical flourish Cato throws himself upon his sword; I quietly take to the ship. There is nothing surprising in this. If they but knew it, almost all men in their degree, some time or other, cherish very nearly the same feelings towards the ocean with me.&quot;
+
+string9=re.sub(r&#39;[^\w\s]&#39;,&#39;&quot;&quot;&#39;, string8)
+string10=re.split(&#39;\s+&#39;, string9)
+string11=[x.lower() for x in string10]
+
+def count_chars (sentence):
+    counts={}
+    for c in sentence:
+        if c in counts:
+            counts[c]+=1
+        else:
+            counts[c]=1
+    for c in counts:
+        print(c, &quot;appears&quot;, counts[c], &quot;times&quot;)
+        
+count_chars(string11)</code></pre>
+<pre><code>## (&#39;circulation&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;all&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;world&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;money&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;hats&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;soon&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;years&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;stepping&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;find&#39;, &#39;appears&#39;, 2, &#39;times&#39;)
+## (&#39;before&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;with&#39;, &#39;appears&#39;, 2, &#39;times&#39;)
+## (&#39;methodically&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;to&#39;, &#39;appears&#39;, 5, &#39;times&#39;)
+## (&#39;deliberately&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;his&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;get&#39;, &#39;appears&#39;, 2, &#39;times&#39;)
+## (&#39;very&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;account&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;every&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;nearly&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;they&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;bringing&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;grim&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;rear&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;warehouses&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;&quot;&quot;&quot;&quot;&quot;&quot;&#39;, &#39;appears&#39;, 3, &#39;times&#39;)
+## (&#39;shore&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;drizzly&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;on&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;it&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;some&#39;, &#39;appears&#39;, 2, &#39;times&#39;)
+## (&#39;see&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;hypos&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;sea&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;substitute&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;driving&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;me&quot;&quot;&#39;, &#39;appears&#39;, 2, &#39;times&#39;)
+## (&#39;sail&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;pistol&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;never&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;funeral&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;involuntarily&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;mouth&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;november&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;strong&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;ishmael&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;about&#39;, &#39;appears&#39;, 2, &#39;times&#39;)
+## (&#39;of&#39;, &#39;appears&#39;, 4, &#39;times&#39;)
+## (&#39;people&quot;&quot;&quot;&quot;&quot;&quot;s&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;upper&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;cherish&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;or&#39;, &#39;appears&#39;, 2, &#39;times&#39;)
+## (&#39;quietly&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;prevent&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;into&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;knocking&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;purse&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;feelings&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;philosophical&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;moral&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;precisely&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;little&#39;, &#39;appears&#39;, 2, &#39;times&#39;)
+## (&#39;from&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;would&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;there&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;long&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;cato&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;their&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;call&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;way&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;a&#39;, &#39;appears&#39;, 5, &#39;times&#39;)
+## (&#39;throws&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;interest&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;that&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;degree&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;ship&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;but&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;part&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;particular&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;damp&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;me&#39;, &#39;appears&#39;, 3, &#39;times&#39;)
+## (&#39;myself&#39;, &#39;appears&#39;, 2, &#39;times&#39;)
+## (&#39;can&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;this&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;up&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;soul&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;whenever&#39;, &#39;appears&#39;, 4, &#39;times&#39;)
+## (&#39;growing&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;sword&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;my&#39;, &#39;appears&#39;, 4, &#39;times&#39;)
+## (&#39;coffin&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;and&#39;, &#39;appears&#39;, 7, &#39;times&#39;)
+## (&#39;this&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;ball&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;almost&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;is&#39;, &#39;appears&#39;, 4, &#39;times&#39;)
+## (&#39;mind&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;it&#39;, &#39;appears&#39;, 4, &#39;times&#39;)
+## (&#39;an&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;high&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;as&#39;, &#39;appears&#39;, 2, &#39;times&#39;)
+## (&#39;himself&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;have&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;in&#39;, &#39;appears&#39;, 4, &#39;times&#39;)
+## (&#39;ocean&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;if&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;other&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;no&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;spleen&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;same&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;for&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;how&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;take&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;watery&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;towards&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;knew&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;upon&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;hand&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;pausing&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;men&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;nothing&#39;, &#39;appears&#39;, 2, &#39;times&#39;)
+## (&#39;such&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;meet&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;flourish&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;ago&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;then&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;off&#39;, &#39;appears&#39;, 2, &#39;times&#39;)
+## (&#39;especially&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;surprising&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;i&#39;, &#39;appears&#39;, 9, &#39;times&#39;)
+## (&#39;street&quot;&quot;&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;thought&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;regulating&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;principle&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;time&#39;, &#39;appears&#39;, 2, &#39;times&#39;)
+## (&#39;the&#39;, &#39;appears&#39;, 10, &#39;times&#39;)
+## (&#39;requires&#39;, &#39;appears&#39;, 1, &#39;times&#39;)
+## (&#39;having&#39;, &#39;appears&#39;, 1, &#39;times&#39;)</code></pre>
+<p><strong>Here are some examples of python bioinformatics I am able to work with:</strong></p>
+<pre class="python"><code>my_seq1 = &quot;ATCATCATG&quot;
+my_seq2 = &quot;CAGCCCAATCAGGCTCTACTGCCACTAAACTTACGCAGGATATATTTACGCCGACGTACT&quot;
+
+def find_3mer (seq):
+    out_dict = {}
+    for i in range(len(seq)-1):
+        if seq[i:i+3] in out_dict:
+            out_dict[seq[i:i+3]] += 1
+        else:
+            out_dict[seq[i:i+3]] = 1
+    return out_dict
+
+print(find_3mer(my_seq1))</code></pre>
+<pre><code>## {&#39;ATG&#39;: 1, &#39;CAT&#39;: 2, &#39;TG&#39;: 1, &#39;ATC&#39;: 2, &#39;TCA&#39;: 2}</code></pre>
+<pre class="python"><code>print(find_3mer(my_seq2))</code></pre>
+<pre><code>## {&#39;CTT&#39;: 1, &#39;AAA&#39;: 1, &#39;ATC&#39;: 1, &#39;AAC&#39;: 1, &#39;ATA&#39;: 2, &#39;AGG&#39;: 2, &#39;CTC&#39;: 1, &#39;AGC&#39;: 1, &#39;AAT&#39;: 1, &#39;ATT&#39;: 1, &#39;CTG&#39;: 1, &#39;CTA&#39;: 2, &#39;ACT&#39;: 4, &#39;CAC&#39;: 1, &#39;ACG&#39;: 3, &#39;CAA&#39;: 1, &#39;CCA&#39;: 2, &#39;CCG&#39;: 1, &#39;CCC&#39;: 1, &#39;TAT&#39;: 2, &#39;CGA&#39;: 1, &#39;CAG&#39;: 3, &#39;TCT&#39;: 1, &#39;GAT&#39;: 1, &#39;TTT&#39;: 1, &#39;TGC&#39;: 1, &#39;GGA&#39;: 1, &#39;TAA&#39;: 1, &#39;GGC&#39;: 1, &#39;TAC&#39;: 4, &#39;TTA&#39;: 2, &#39;GAC&#39;: 1, &#39;CGT&#39;: 1, &#39;TCA&#39;: 1, &#39;GCA&#39;: 1, &#39;GTA&#39;: 1, &#39;GCC&#39;: 3, &#39;GCT&#39;: 1, &#39;CT&#39;: 1, &#39;CGC&#39;: 2}</code></pre>
+<pre class="python"><code>import numpy as np
+
+# Use these values to calculate scores
+match_score = 2
+mismatch_score = -1
+gap_penalty = -1
+
+# Make a score matrix with these two sequences
+seq1 = &quot;CCAGT&quot;
+seq2 = &quot;ACAAGT&quot;
+
+def sw_fun(seq1,seq2,gap_penalty=-1, match_score=2, mismatch_score=-1):
+    m=len(seq1) #length of horizontal sequence
+    n=len(seq2) #length of vertical sequence
+    score=np.empty(shape=[n+1,m+1]) #array to hold scores
+   
+    for j in range(0, m + 1): score[0][j] = 0
+    for i in range(0, n + 1): score[i][0] = 0
+    
+    for i in range(1, n + 1): 
+        for j in range(1, m + 1):
+            insert = score[i - 1][j] + gap_penalty 
+            delete = score[i][j - 1] + gap_penalty 
+            match = score[i - 1][j - 1] + match_score if seq1[j-1]==seq2[i-1] else mismatch_score
+            score[i][j] = max(match, delete, insert, 0)
+    return score
+
+sw_fun(seq1,seq2,gap_penalty,match_score,mismatch_score)</code></pre>
+<pre><code>## array([[ 0.,  0.,  0.,  0.,  0.,  0.],
+##        [ 0.,  0.,  0.,  2.,  1.,  0.],
+##        [ 0.,  2.,  2.,  1.,  0.,  0.],
+##        [ 0.,  1.,  1.,  4.,  3.,  2.],
+##        [ 0.,  0.,  0.,  3.,  2.,  1.],
+##        [ 0.,  0.,  0.,  2.,  5.,  4.],
+##        [ 0.,  0.,  0.,  1.,  4.,  7.]])</code></pre>
 
               <hr>
               <div class="related-posts">

@@ -8,3 +8,107 @@ tags: []
 description: ''
 ---
 
+**Here are some examples of some RegEx codes I can work with:**
+
+```{python}
+import re
+
+string1="We have to extract these numbers 12, 47, 48 The integers numbers are also interesting: 189 2036 314\',\' is a separator, so please extract these numbers 125,789,1450 and also these 564,90456 We like to offer you 7890$ per month in order to complete this task... we are joking"
+print(string1)
+
+re.findall(r"\b\d+\b",string1)
+```
+
+```{python}
+string3=r"Fedora Core 		ftp 	\
+Fedora Extras 	http 	ftp 	rsync\
+          ftp://ftp7.br.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp3.de.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp.is.FreeBSD.org/pub/FreeBSD/ (ftp / rsync)\
+          ftp://ftp4.jp.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp.no.FreeBSD.org/pub/FreeBSD/ (ftp / rsync)\
+        *\
+          ftp://ftp3.no.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp.pt.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp1.ro.FreeBSD.org/pub/FreeBSD/ (ftp / ftpv6)\
+          ftp://ftp3.es.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp2.tw.FreeBSD.org/pub/FreeBSD/ (ftp / ftpv6 / http / httpv6 / rsync / rsyncv6)\
+          ftp://ftp6.uk.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp6.us.FreeBSD.org/pub/FreeBSD/ (ftp / http)"
+          
+re.findall(r"ftp[s]?://(?:[\w/]|[\d]|[\S]|[!*\(\),]|(?:%[\w/][\w/]))+", string3)
+```
+
+```{python}
+string8="Call me Ishmael. Some years ago — never mind how long precisely — having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world. It is a way I have of driving off the spleen, and regulating the circulation. Whenever I find myself growing grim about the mouth; whenever it is a damp, drizzly November in my soul; whenever I find myself involuntarily pausing before coffin warehouses, and bringing up the rear of every funeral I meet; and especially whenever my hypos get such an upper hand of me, that it requires a strong moral principle to prevent me from deliberately stepping into the street, and methodically knocking people’s hats off — then, I account it high time to get to sea as soon as I can. This is my substitute for pistol and ball. With a philosophical flourish Cato throws himself upon his sword; I quietly take to the ship. There is nothing surprising in this. If they but knew it, almost all men in their degree, some time or other, cherish very nearly the same feelings towards the ocean with me."
+
+string9=re.sub(r'[^\w\s]','""', string8)
+string10=re.split('\s+', string9)
+string11=[x.lower() for x in string10]
+
+def count_chars (sentence):
+    counts={}
+    for c in sentence:
+        if c in counts:
+            counts[c]+=1
+        else:
+            counts[c]=1
+    for c in counts:
+        print(c, "appears", counts[c], "times")
+        
+count_chars(string11)
+```
+
+**Here are some examples of python bioinformatics I am able to work with:**
+
+```{python}
+my_seq1 = "ATCATCATG"
+my_seq2 = "CAGCCCAATCAGGCTCTACTGCCACTAAACTTACGCAGGATATATTTACGCCGACGTACT"
+
+def find_3mer (seq):
+    out_dict = {}
+    for i in range(len(seq)-1):
+        if seq[i:i+3] in out_dict:
+            out_dict[seq[i:i+3]] += 1
+        else:
+            out_dict[seq[i:i+3]] = 1
+    return out_dict
+
+print(find_3mer(my_seq1))
+print(find_3mer(my_seq2))
+```
+
+
+```{python}
+import numpy as np
+
+# Use these values to calculate scores
+match_score = 2
+mismatch_score = -1
+gap_penalty = -1
+
+# Make a score matrix with these two sequences
+seq1 = "CCAGT"
+seq2 = "ACAAGT"
+
+def sw_fun(seq1,seq2,gap_penalty=-1, match_score=2, mismatch_score=-1):
+    m=len(seq1) #length of horizontal sequence
+    n=len(seq2) #length of vertical sequence
+    score=np.empty(shape=[n+1,m+1]) #array to hold scores
+   
+    for j in range(0, m + 1): score[0][j] = 0
+    for i in range(0, n + 1): score[i][0] = 0
+    
+    for i in range(1, n + 1): 
+        for j in range(1, m + 1):
+            insert = score[i - 1][j] + gap_penalty 
+            delete = score[i][j - 1] + gap_penalty 
+            match = score[i - 1][j - 1] + match_score if seq1[j-1]==seq2[i-1] else mismatch_score
+            score[i][j] = max(match, delete, insert, 0)
+    return score
+
+sw_fun(seq1,seq2,gap_penalty,match_score,mismatch_score)
+```
+
+
+
