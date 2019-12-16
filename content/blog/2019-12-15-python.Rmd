@@ -9,6 +9,7 @@ description: ''
 ---
 
 **Here are some examples of some RegEx codes I can work with:**
+---------------------------------------------------
 
 ```{python}
 import re
@@ -18,6 +19,8 @@ print(string1)
 
 re.findall(r"\b\d+\b",string1)
 ```
+The code above matches and pulls all integers in `string1`.
+
 
 ```{python}
 string3=r"Fedora Core 		ftp 	\
@@ -38,6 +41,8 @@ Fedora Extras 	http 	ftp 	rsync\
           
 re.findall(r"ftp[s]?://(?:[\w/]|[\d]|[\S]|[!*\(\),]|(?:%[\w/][\w/]))+", string3)
 ```
+^^^This code matches all ftp addresses in `string3`.
+
 
 ```{python}
 string8="Call me Ishmael. Some years ago — never mind how long precisely — having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world. It is a way I have of driving off the spleen, and regulating the circulation. Whenever I find myself growing grim about the mouth; whenever it is a damp, drizzly November in my soul; whenever I find myself involuntarily pausing before coffin warehouses, and bringing up the rear of every funeral I meet; and especially whenever my hypos get such an upper hand of me, that it requires a strong moral principle to prevent me from deliberately stepping into the street, and methodically knocking people’s hats off — then, I account it high time to get to sea as soon as I can. This is my substitute for pistol and ball. With a philosophical flourish Cato throws himself upon his sword; I quietly take to the ship. There is nothing surprising in this. If they but knew it, almost all men in their degree, some time or other, cherish very nearly the same feelings towards the ocean with me."
@@ -58,8 +63,11 @@ def count_chars (sentence):
         
 count_chars(string11)
 ```
+^^^ This counts the number of times each word shows up in the excerpt from Moby Dick in `string8`.
+
 
 **Here are some examples of python bioinformatics I am able to work with:**
+---------------------------------------------------
 
 ```{python}
 my_seq1 = "ATCATCATG"
@@ -77,7 +85,7 @@ def find_3mer (seq):
 print(find_3mer(my_seq1))
 print(find_3mer(my_seq2))
 ```
-
+The code above presents all the 3-mers present in `my_seq1` and `my_seq2`. A 3-mer refers to all the possible subsequences of length 3 that can be extracted from the two sequences.
 
 ```{python}
 import numpy as np
@@ -109,6 +117,4 @@ def sw_fun(seq1,seq2,gap_penalty=-1, match_score=2, mismatch_score=-1):
 
 sw_fun(seq1,seq2,gap_penalty,match_score,mismatch_score)
 ```
-
-
-
+^^^This code shows an example of a Smith-Waterman algorithm.

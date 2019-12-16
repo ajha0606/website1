@@ -5,15 +5,15 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "2698470173",
+    "hash" : "0",
     "id" : "DDE37767",
-    "lastKnownWriteTime" : 1576457776,
-    "last_content_update" : 1576457776146,
+    "lastKnownWriteTime" : 1576460859,
+    "last_content_update" : 1576460859774,
     "path" : "~/Desktop/website1/content/about/2019-12-15-about-me.Rmd",
     "project_path" : "content/about/2019-12-15-about-me.Rmd",
     "properties" : {
-        "cursorPosition" : "24,128",
-        "scrollLine" : "3"
+        "cursorPosition" : "12,0",
+        "scrollLine" : "6"
     },
     "read_only" : false,
     "read_only_alternatives" : [
